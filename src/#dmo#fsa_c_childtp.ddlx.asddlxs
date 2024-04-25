@@ -1,0 +1,184 @@
+@Metadata.layer: #CORE
+
+// Search Term #HeaderInfo-Child, #OPTable
+@UI: {
+  headerInfo: { 
+    typeName: 'Child Entity 1 (1..n)',
+    typeNamePlural: 'Child Entities',
+    title.value: 'ID',
+    description.value: 'StringProperty',
+    typeImageUrl: 'sap-icon://blank-tag',
+    imageUrl: 'StreamFile'
+  },
+  // Search Term #PresentationVariant-Child
+  presentationVariant: [
+    { 
+      qualifier: 'pVariant',
+      maxItems: 5,
+      sortOrder: [
+        {
+          by: 'StringProperty',
+          direction: #DESC
+        }
+      ],
+      visualizations: [{type: #AS_LINEITEM}]
+    }
+  ],
+  // Search Term #SelectionVariant-Child
+  selectionVariant: [
+    { 
+      qualifier: 'sVariant',
+      text: 'SelectionVariant (Positive criticality)',
+      filter: 'CriticalityCode EQ 3'
+    }
+  ],
+  // Search Term #SelectionPresentationVariant-Child
+  selectionPresentationVariant: [
+    { text: '(#SelectionPresentationVariant-Child)',
+      qualifier: 'ChildSP',
+      presentationVariantQualifier: 'pVariant',
+      selectionVariantQualifier: 'sVariant'
+    }
+  ]
+}
+
+annotate entity /DMO/FSA_C_ChildTP
+  with 
+{
+  @UI.facet: [
+    { 
+      purpose: #HEADER,
+      type: #DATAPOINT_REFERENCE,
+      targetQualifier: 'StringProperty'
+    },
+    { 
+      purpose: #STANDARD,
+      type: #COLLECTION,
+      id: 'Collection',
+      label: 'Child Data'
+    },
+//    { 
+//      purpose: #STANDARD,
+//      type: #FIELDGROUP_REFERENCE,
+//      targetQualifier: 'RootData',
+//      label: 'Root Data'
+//    },
+    { 
+      purpose: #STANDARD,
+      type: #DATAPOINT_REFERENCE,
+      targetQualifier: 'FieldWithPercent',
+      label: 'Percentage',
+      parentId: 'Collection'
+    },
+    { 
+      purpose: #STANDARD,
+      type: #DATAPOINT_REFERENCE,
+      targetQualifier: 'CriticalityCode',
+      label: 'Criticality',
+      parentId: 'Collection'
+    },
+    // Search Term #Stream
+    {
+      purpose: #STANDARD,
+      type: #FIELDGROUP_REFERENCE,
+      targetQualifier: 'Stream',
+      label: 'Large Object (#Stream)',
+      parentId: 'Collection'
+    },
+    // Search Term #OPTable
+    {
+      purpose: #STANDARD,
+      type: #LINEITEM_REFERENCE,
+      targetElement: '_Grandchild',
+      label: 'Grandchild Entities (1..n)(#OPTable)'
+    }
+  ]
+  
+  @UI.hidden: true
+  ID;
+  
+  @UI.hidden: true
+  ParentID;
+  
+  @UI: { 
+    // Search Term #OPTable
+    lineItem: [
+      { 
+        position: 10,
+        criticality: 'CriticalityCode'
+      },
+      // Search Term #ActionOverload
+      { 
+        type: #FOR_ACTION, 
+        dataAction: '/DMO/FSA_C_RootTP.createChildFromRoot', 
+        label: 'Create Child from Root (#ActionOverload)'
+      }
+    ], 
+    dataPoint: { 
+      criticality: 'CriticalityCode',
+      criticalityRepresentation: #WITHOUT_ICON,
+      title: 'String Property' 
+    }
+  }
+  StringProperty;
+  
+  @UI: { 
+    lineItem: [
+      { 
+        position: 20,
+        label: 'Percentage (0.00 to trigger Validation)' 
+      }
+    ], // Search Term #OPTable
+    dataPoint: { 
+      title: 'Percentage property',
+      visualization: #NUMBER
+    }
+  } 
+  @EndUserText.quickInfo: 'Change value to trigger validation - side effect'
+  FieldWithPercent;
+
+  @UI: { 
+    dataPoint: { 
+      title: 'Criticality',
+      criticality: 'CriticalityCode'
+    }
+  } 
+  CriticalityCode;
+
+  @UI: {
+    // Search Term #OPTable
+    lineItem: [
+      { 
+        label: 'Toggle Delete (#SideEffects)',
+        position: 30
+      }
+    ],
+    defaultValue: 'X'
+  }
+  @EndUserText.quickInfo: 'Check/Uncheck to enable/disable Delete button - side effect'
+  BooleanProperty;
+  
+  // Search Term #Stream
+  @UI.hidden: true
+  StreamMimeType;
+  
+  @UI: {
+    lineItem: [{ position: 50, label: 'Attachment (#StreamTable)' }], // Search Term #StreamTable
+    fieldGroup: [{ position: 10, qualifier: 'Stream', label: 'Attachment (#Stream)' }] // Search Term #Stream
+  }
+  StreamFile;
+  
+  // Search Term #Stream
+  @UI.hidden: true
+  StreamFilename;
+  
+  @UI: {
+    lineItem: [{ position: 40, label: 'Child Pieces (#SideEffects)' }] // Search Term #SideEffects
+  }
+  @EndUserText.quickInfo: 'Change value to trigger Total recalculation at Root - side effect'
+  ChildPieces;
+  
+//  // Search Term #SideEffects ( target path more than one association )
+//  @UI.fieldGroup: [{ qualifier: 'RootData' }]
+//  TotalGrandchildPieces;
+}
